@@ -1,0 +1,187 @@
+{
+  "id": "ras5e",
+  "title": "Rune and Steel 5e",
+  "description": "Rune and Steel for the DND5E System.",
+  "version": "1.0.0",
+  "authors": [
+    {
+      "name": "Winther",
+      "flags": {}
+    }
+  ],
+  "url": "https://github.com/ZWinther/ras5e-module",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "12"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "dnd5e",
+        "type": "system",
+        "manifest": "https://raw.githubusercontent.com/foundryvtt/dnd5e/master/system.json",
+        "compatibility": {
+          "minimum": "3.0.0"
+        }
+      }
+    ],
+    "requires": [
+      {
+        "id": "lib-wrapper",
+        "type": "module",
+        "manifest": "https://github.com/ruipin/fvtt-lib-wrapper/releases/latest/download/module.json",
+        "compatibility": {
+          "minimum": "1.12.13.0"
+        }
+      }
+    ]
+  },
+  "esmodules": [
+    "ras5e.js"
+  ],
+  "styles": [
+    "styles/ras5e.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json",
+      "flags": {}
+    },
+    {
+      "lang": "fr",
+      "name": "français",
+      "path": "lang/fr.json",
+      "flags": {}
+    }
+  ],
+  "documentTypes": {
+    "Item": {
+      "socialclass": {}
+    }
+  },
+  "media": [
+    {
+      "type": "cover",
+      "url": "https://raw.githubusercontent.com/ZWinther/lotr5e-module/master/lotr5e-cover.jpg",
+      "caption": "<The Lord of the Rings Roleplaying 5E>",
+      "loop": false,
+      "flags": {}
+    }
+  ],
+  "manifest": "https://github.com/ZWinther/lotr5e-module/releases/latest/download/module.json",
+  "download": "https://github.com/ZWinther/lotr5e-module/releases/download/v0.5.0/module.zip",
+  "packs": [
+    {
+      "name": "rands-classes",
+      "label": "R&S Classes",
+      "path": "packs/rands-classes",
+      "type": "Item",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "dnd5e"
+    },
+    {
+      "name": "rands-actors",
+      "label": "R&S Actors",
+      "path": "packs/rands-actors",
+      "type": "Actor",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "dnd5e"
+    },
+    {
+      "name": "rands-backgrounds",
+      "label": "R&S Backgrounds",
+      "path": "packs/rands-backgrounds",
+      "type": "Item",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "dnd5e"
+    },
+    {
+      "name": "rands-birth-traits",
+      "label": "R&S Birth Traits",
+      "path": "packs/rands-birth-traits",
+      "type": "Item",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "dnd5e"
+    },
+    {
+      "name": "rands-items",
+      "label": "R&S Items",
+      "path": "packs/rands-items",
+      "type": "Item",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "dnd5e"
+    },
+    {
+      "name": "rands-macros",
+      "label": "R&S Macros",
+      "path": "packs/rands-macros",
+      "type": "Macro",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "dnd5e"
+    },
+    {
+      "name": "rands-races",
+      "label": "R&S Races",
+      "path": "packs/rands-races",
+      "type": "Item",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "dnd5e"
+    },
+    {
+      "name": "rands-social-classes",
+      "label": "R&S Social Classes",
+      "path": "packs/rands-social-classes",
+      "type": "Item",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "dnd5e"
+    },
+    {
+      "name": "rands-spells",
+      "label": "R&S Spells",
+      "path": "packs/rands-spells",
+      "type": "Item",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "dnd5e"
+    },
+    {
+      "name": "rands-tables",
+      "label": "R&S Tables",
+      "path": "packs/rands-tables",
+      "type": "RollTable",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "dnd5e"
+    }
+  ]
+}
