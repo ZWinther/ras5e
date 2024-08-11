@@ -1,0 +1,19 @@
+{{!-- Fate Dice --}}
+<div class="ras-fatebox">
+    <div class="name name-stacked">
+        <span class="fate-title">{{ localize "RAS5E.FateDice" }}</span>
+    </div>
+    <div class="meter">
+        <div class="label">
+            <span class="value">
+                {{#if @root.editable}}
+                <input type="number" name="flags.ras5e.fatedice.value" value="{{ actor.flags.ras5e.fatedice.value }}">
+                {{else}}
+                {{ actor.flags.ras5e.fatedice.value }}
+                {{/if}}
+            </span>
+            <span class="separator">&sol;</span>
+            <span class="max">{{ actor.flags.ras5e.fatedice.max }}</span>
+        </div>
+    </div>
+</div>

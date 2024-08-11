@@ -1,0 +1,21 @@
+{{!-- Fate Dice --}}
+<div class="meter-group">
+    <div class="label roboto-condensed-upper">
+        <span>{{ localize "RAS5E.Wyrd" }}</span>
+        {{#if @root.editable}}
+        {{/if}}
+    </div>
+    <div class="meter hit-dice progress" role="meter" aria-valuemin="0"
+            aria-valuenow="{{ actor.flags.ras5e.wyrd.value }}" aria-valuemax="{{ actor.flags.ras5e.wyrd.max }}"
+            style="--bar-percentage: {{ actor.flags.ras5e.wyrd.pct }}%">
+        <div class="label">
+            {{#if @root.editable}}
+            <input type="number" name="flags.ras5e.wyrd.value" value="{{ actor.flags.ras5e.wyrd.value }}">
+            {{else}}
+            <span class="value">{{ actor.flags.ras5e.wyrd.value }}</span>
+            {{/if}}
+            <span class="separator">&sol;</span>
+            <span class="max">{{ actor.flags.ras5e.wyrd.max }}</span>
+        </div>
+    </div>
+</div>

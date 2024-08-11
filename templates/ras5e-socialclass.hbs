@@ -1,0 +1,24 @@
+<div class="socialclass-box">
+{{#if actor.flags.ras5e.socialclass}}
+    <div class="pill-lg texture socialclass item-tooltip" data-action="edit"
+            data-item-id="{{ actor.flags.ras5e.socialclass.id }}"
+            aria-label="{{#if actor.isOwner}}{{ localize "DND5E.ItemEdit" }}{{else}}{{ localize "DND5E.ItemView" }}{{/if}}"
+            data-tooltip='<section class="loading" data-uuid="Actor.{{ actor.id }}.Item.{{ actor.flags.ras5e.socialclass.id }}"><i class="fas fa-spinner fa-spin-pulse"></i></section>'
+            data-tooltip-class="dnd5e2 dnd5e-tooltip item-tooltip"
+            data-tooltip-direction="LEFT"
+            >
+            
+        {{#if actor.flags.ras5e.socialclass.img}}
+        <img class="gold-icon" src="{{ actor.flags.ras5e.socialclass.img }}"
+                alt="{{ actor.flags.ras5e.socialclass.name }}">
+        {{/if}}
+        <div class="name name-stacked">
+            <span class="title">{{ actor.flags.ras5e.socialclass.name }}</span>
+        </div>
+    </div>
+{{else if actor.isOwner}}
+    <div class="pill-lg empty roboto-upper" data-action="findItem"  data-item-type="ras5e.socialclass">
+        {{ localize "RAS5E.SocialClassAdd" }}
+    </div>
+{{/if}}
+</div>
