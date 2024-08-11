@@ -1,0 +1,7 @@
+2024/08/11-13:28:49.444 33f4 Recovering log #61
+2024/08/11-13:28:49.448 33f4 Delete type=0 #61
+2024/08/11-13:28:49.448 33f4 Delete type=3 #59
+2024/08/11-13:48:53.041 205c Level-0 table #66: started
+2024/08/11-13:48:53.041 205c Level-0 table #66: 0 bytes OK
+2024/08/11-13:48:53.043 205c Delete type=0 #64
+2024/08/11-13:48:53.047 205c Manual compaction at level-0 from '!macros!Yc3076zLuqhZxQqK' @ 72057594037927935 : 1 .. '!macros!Yc3076zLuqhZxQqK' @ 0 : 0; will stop at (end)
