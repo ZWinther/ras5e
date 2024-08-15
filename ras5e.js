@@ -96,6 +96,7 @@ Hooks.on('init', async function () {
 
 	Object.assign(CONFIG.Item.typeLabels, { socialclass: "TYPES.Item.socialclass" });
 	Object.assign(CONFIG.DND5E.featureTypes.race, {	subtypes: { birthfeat: "RAS5E.BirthTrait" }	});
+	Object.assign(CONFIG.DND5E.featureTypes.class.subtypes, { attuned: "RAS5E.WeaponAttune" } );
 	
 	dnd5e.utils.preLocalize("featureTypes.race.subtypes");
 	Object.assign(CONFIG.Item.dataModels, { "ras5e.socialclass": SocialclassData });
@@ -558,4 +559,4 @@ Hooks.on('renderActorSheet5eCharacter2', async function (app, html, data) {
 
     //     $(html).find(".dnd5e.sheet.actor.character").css("min-height", "823px");
     // }
-    });
+});
