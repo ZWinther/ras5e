@@ -339,115 +339,180 @@ Hooks.on('init', async function () {
 
 // Function to listen for item usage
 Hooks.on('dnd5e.preUseItem', async (item5e, event1, event2) => {
-const surgeID = "Compendium.ras5e.rands-classes.Item.iXIuClKxzyJkSPwJ";
-const releaseID = "Compendium.ras5e.rands-classes.Item.mcb8yRfW7t6kpSZE";
-// Check if the used item matches the specific UUID
-if (item5e._stats.compendiumSource === surgeID) {
-	// Hooks.on("renderChatMessage", (message, html, data) => {
-	// 	console.log(message);
-	// 	console.log(data);
-	// });
-	
-	// Prevent the default popup
-    event2.event.preventDefault();
-	event2.event.stopPropagation();
-	event2.configureDialog = false;
-	event2.createMessage = false;
-	event2.flags.dnd5e.use.consumedResource = false;
-	// Prompt the user for the number of items to use
-	let dialog = new Dialog({
-	title: "Use Items",
-	content: `
-		<form>
-		<div class="form-group">
-			<label>How many items do you want to use?</label>
-			<input type="number" name="quantity" min="1" value="1"/>
-		</div>
-		</form>
-	`,
-	buttons: {
-		use: {
-		label: "Use",
-		callback: async (html) => {
-			const quantity = parseInt(html.find('[name="quantity"]').val());
-			await consumeItems(item5e, quantity);
-		}
+	const surgeID = "Compendium.ras5e.rands-classes.Item.iXIuClKxzyJkSPwJ";
+	const releaseID = "Compendium.ras5e.rands-classes.Item.mcb8yRfW7t6kpSZE";
+	const furyID = "Compendium.ras5e.rands-classes.Item.lHORJ64My0cH52Nk";
+	// Check if the used item matches the specific UUID
+	if (item5e._stats.compendiumSource === surgeID) {
+		// Hooks.on("renderChatMessage", (message, html, data) => {
+		// 	console.log(message);
+		// 	console.log(data);
+		// });
+		
+		// Prevent the default popup
+		event2.event.preventDefault();
+		event2.event.stopPropagation();
+		event2.configureDialog = false;
+		event2.createMessage = false;
+		event2.flags.dnd5e.use.consumedResource = false;
+		// Prompt the user for the number of items to use
+		let dialog = new Dialog({
+		title: "Use Items",
+		content: `
+			<form>
+			<div class="form-group">
+				<label>How many items do you want to use?</label>
+				<input type="number" name="quantity" min="1" value="1"/>
+			</div>
+			</form>
+		`,
+		buttons: {
+			use: {
+			label: "Use",
+			callback: async (html) => {
+				const quantity = parseInt(html.find('[name="quantity"]').val());
+				await consumeItems(item5e, quantity);
+			}
+			},
+			cancel: {
+			label: "Cancel"
+			}
 		},
-		cancel: {
-		label: "Cancel"
-		}
-	},
-	default: "use"
-	});
-	dialog.render(true);
-}
-if (item5e._stats.compendiumSource === releaseID) {
-	// Hooks.on("renderChatMessage", (message, html, data) => {
-	// 	console.log(message);
-	// 	console.log(data);
-	// });
-	
-	// Prevent the default popup
-	event1.createMeasuredTemplate = false;
-    event2.event.preventDefault();
-	event2.event.stopPropagation();
-	event2.configureDialog = false;
-	event2.createMessage = false;
-	event2.flags.dnd5e.use.consumedResource = false;
-	// Prompt the user for the number of items to use
-	let dialog = new Dialog({
-	title: "Use Items",
-	content: `
-		<form>
-		<div class="form-group">
-			<label>How many items do you want to use?</label>
-			<input type="number" name="quantity" min="1" value="1"/>
-		</div>
-		</form>
-	`,
-	buttons: {
-		use: {
-		label: "Use",
-		callback: async (html) => {
-			const quantity = parseInt(html.find('[name="quantity"]').val());
-			await consumeItems(item5e, quantity);
-		}
+		default: "use"
+		});
+		dialog.render(true);
+	}
+	if (item5e._stats.compendiumSource === releaseID) {
+		// Hooks.on("renderChatMessage", (message, html, data) => {
+		// 	console.log(message);
+		// 	console.log(data);
+		// });
+		
+		// Prevent the default popup
+		event1.createMeasuredTemplate = false;
+		event2.event.preventDefault();
+		event2.event.stopPropagation();
+		event2.configureDialog = false;
+		event2.createMessage = false;
+		event2.flags.dnd5e.use.consumedResource = false;
+		// Prompt the user for the number of items to use
+		let dialog = new Dialog({
+		title: "Use Items",
+		content: `
+			<form>
+			<div class="form-group">
+				<label>How many items do you want to use?</label>
+				<input type="number" name="quantity" min="1" value="1"/>
+			</div>
+			</form>
+		`,
+		buttons: {
+			use: {
+			label: "Use",
+			callback: async (html) => {
+				const quantity = parseInt(html.find('[name="quantity"]').val());
+				await consumeItems(item5e, quantity);
+			}
+			},
+			cancel: {
+			label: "Cancel"
+			}
 		},
-		cancel: {
-		label: "Cancel"
+		default: "use"
+		});
+		dialog.render(true);
+	}
+	if (item5e._stats.compendiumSource === furyID) {
+		
+		// Hooks.on("renderChatMessage", (message, html, data) => {
+		// 	console.log(message);
+		// 	console.log(data);
+		// });
+		
+		// Prevent the default popup
+		// event1.consumeUsage = false;
+		// event2.flags.dnd5e.use.consumedUsage = false;
+		event2.configureDialog = false;
+		// event2.createMessage = false;
+
+		const item = item5e;
+		const actor = item.parent;
+		const options = Array.fromRange(item.system.uses.value).reduce((acc, e) => {
+		return acc + `<option value="${e+1}">${e+1} charges</option>`;
+		}, "");
+		const content = `
+		<form> <div class="form-group">
+		<label>Charges:</label>
+		<div class="form-fields">
+		<select>${options}</select>
+		</div></div></form>`;
+		if (item.system.uses.value != 0) {
+			const num = await Dialog.prompt({
+			title: "Consume Charges",
+			content,
+			rejectClose: false,
+			callback: (html) => html[0].querySelector("select").value
+			});
+			if(!num) return;
+			const value = Number(num);
+			await item.update({ "system.uses.value": item.system.uses.value - value });
+			actor.setFlag('ras5e', 'furyUsed', { value: value });
+			ui.notifications.info(`${value} ${item.name}(s) used.`);
 		}
-	},
-	default: "use"
-	});
-	dialog.render(true);
-}
+	
+
+		// // Prompt the user for the number of items to use
+		// let dialog = new Dialog({
+		// title: "Use Fury Charges",
+		// content: `
+		// 	<form>
+		// 	<div class="form-group">
+		// 		<label>How many stacks do you want to use?</label>
+		// 		<input type="number" name="uses" min="1" value="1"/>
+		// 	</div>
+		// 	</form>
+		// `,
+		// buttons: {
+		// 	use: {
+		// 	label: "Use",
+		// 	callback: async (html) => {
+		// 		const charges = parseInt(html.find('[name="uses"]').val());
+		// 		await consumeFury(item5e, charges);
+		// 	}
+		// 	},
+		// 	cancel: {
+		// 	label: "Cancel"
+		// 	}
+		// },
+		// default: "use"
+		// });
+		// dialog.render(true);
+	}
 });
 
 // Function to consume items
 async function consumeItems(item, quantity) {
-const actor = item.parent;
-const itemID = "Compendium.ras5e.rands-classes.Item.3ls2otXV7NR77iC3"; // Use the item's ID to find it in the actor's inventory
-// Find the item in the actor's inventory
-console.log(actor);
-const targetItem = actor.sourcedItems.get(itemID);
-console.log(targetItem);
+	const actor = item.parent;
+	const itemID = "Compendium.ras5e.rands-classes.Item.3ls2otXV7NR77iC3"; // Use the item's ID to find it in the actor's inventory
+	// Find the item in the actor's inventory
+	const targetItem = actor.sourcedItems.get(itemID);
 
-if (!targetItem) {
-	ui.notifications.error(`Item not found on the actor.`);
-}
+	if (!targetItem) {
+		ui.notifications.error(`Item not found on the actor.`);
+	}
 
-const itemData = targetItem.system;
+	const itemData = targetItem.system;
 
-// Check if the actor has enough items
-if (itemData.quantity >= quantity) {
-	// Update the item quantity
-	await targetItem.update({ 'system.quantity': itemData.quantity - quantity });
-	actor.setFlag('ras5e', 'soulsUsed', { value: quantity });
-	item.displayCard();
-	ui.notifications.info(`${quantity} ${targetItem.name}(s) used.`);
-} else {
-	ui.notifications.error(`Not enough ${targetItem.name}(s) to use.`);
-}
+	// Check if the actor has enough items
+	if (itemData.quantity >= quantity) {
+		// Update the item quantity
+		await targetItem.update({ 'system.quantity': itemData.quantity - quantity });
+		actor.setFlag('ras5e', 'soulsUsed', { value: quantity });
+		item.displayCard();
+		ui.notifications.info(`${quantity} ${targetItem.name}(s) used.`);
+	} else {
+		ui.notifications.error(`Not enough ${targetItem.name}(s) to use.`);
+	}
 }
 
 function i18n(key) {
@@ -481,10 +546,9 @@ Hooks.on('preCreateActor', async function (actor, data, options) {
 	// 	max: 0
 	// })
 });
-//dnd5e.advancementManagerComplete
-// Hooks.on('updateActor', async function (actor, data, options) {
-// 	const fateFlag = actor.getFlag('ras5e', 'fatedice');
-// 	fateFlag.max = actor.system.attributes.prof;
+
+
+
 // });
 Hooks.on('renderActorSheet5eCharacter2', async function (app, html, data) {
 	
@@ -559,4 +623,4 @@ Hooks.on('renderActorSheet5eCharacter2', async function (app, html, data) {
 
     //     $(html).find(".dnd5e.sheet.actor.character").css("min-height", "823px");
     // }
-});
+    });
