@@ -72,7 +72,6 @@ class SocialclassData extends dnd5e.dataModels.ItemDataModel.mixin(dnd5e.dataMod
 
 Hooks.on('init', async function () {
 	
-
 	// const flag = this.getFlag('ras5e', 'fatedice');
 	// 	if (flag == undefined) {
 	// 		this.setFlag('ras5e', 'fatedice', {
@@ -187,7 +186,8 @@ Hooks.on('init', async function () {
 		farming: "Compendium.ras5e.rands-items.Item.rzHNLWcw9NSt5c57",
 		stonecarver: "Compendium.ras5e.rands-items.Item.47YCovSsldmW16Nr"
 	});
-
+	Object.assign(CONFIG.DND5E.spellcastingTypes.leveled.progression, {	mystic: { label: "RAS5E.SpellProgMyst", divisor: 1, roundUp: true} });
+	Object.assign(CONFIG.DND5E.spellProgression, { mystic: "RAS5E.SpellProgMyst" });
 	const validWProperties = [ 'unw', 'cru', 'def', 'por', 'dm1', 'dm2', 'hpd', 'fpd', 'lhv', 'ac1', 'ac2', 'tri', 'dis', 'hvs' ];
 	validWProperties.forEach(item => CONFIG.DND5E.validProperties.weapon.add(item));
 	const validAProperties = [ 'enh', 'ref' ];
@@ -489,6 +489,58 @@ Hooks.on('dnd5e.preUseItem', async (item5e, event1, event2) => {
 		// dialog.render(true);
 	}
 });
+// var preFury = null;
+// var afterFury = null;
+// Hooks.on('dnd5e.preRollAttack', (Item5e, roll) => {
+// 	const item = Item5e;
+// 	const actor = item.parent;
+// 	const furyFlag = actor.getFlag('ras5e', 'furyUsed')
+	
+// 	if (furyFlag.value > 0 ) {
+// 		preFury = furyFlag.value;
+// 		item.setFlag('ras5e', 'itemFury', {
+// 			val: preFury
+// 		});
+// 		furyMod = setAfterFury().onCall(async (roll) => {
+// 		roll.parts.push([furyMod]);
+		
+// 		console.log(roll.parts);
+// 	}
+// });
+
+// Hooks.on('renderDialog', (dialog, html) => {
+// 	if (dialog.data.title.includes("Attack Roll") && preFury > 0) {
+// 		const options = Array.fromRange(preFury).reduce((acc, e) => {
+// 			return acc + `<option value="${e+1}">${e+1} charges</option>`;
+// 		}, "");
+
+// 		let dropdown = `
+// 		<form> <div class="form-group">
+// 		<label>Charges:</label>
+// 		<div class="form-fields">
+// 		<select id="fury-charges">${options}</select>
+// 		</div></div></form>`;
+
+// 		html.find('.dialog-content form div:last-child').after(dropdown);
+
+// 		// Add event listeners to dialog buttons
+//             $('.dialog-button').on('click', () => {
+				
+//                 const selectedCharges = parseInt(html.find('#fury-charges').val());
+// 				setAfterFury(selectedCharges)
+// 				console.log(selectedCharges);
+//             });
+// 	}
+// });
+// async function setAfterFury(selectedCharges) {
+// 	afterFury = selectedCharges;
+// }
+// Hooks.on('dnd5e.rollAttack', (Item5e, roll) => {
+// 	if (afterFury > 0) {
+// 		roll.data.mod = `${roll.data.mod} + ${afterFury}`;
+// 		console.log(roll)
+// 	}
+// });
 
 // Function to consume items
 async function consumeItems(item, quantity) {
