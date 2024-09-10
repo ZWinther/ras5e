@@ -1,9 +1,9 @@
-//import { utils } from "../../../systems/dnd5e/dnd5e.mjs";
-
+const moduleID = 'ras5e';
+const modulePath = `modules/${moduleID}/`;
 // Remind users to install/enable libwrapper
 Hooks.once('ready', () => {
     if(!game.modules.get('lib-wrapper')?.active && game.user.isGM)
-        ui.notifications.error("The Lord of the Rings Roleplaying 5E requires the 'libWrapper' module. Please install and activate it.");
+        ui.notifications.error("Rune & Steel 5E requires the 'libWrapper' module. Please install and activate it.");
 });
 
 // Handlebars helpers
@@ -69,7 +69,6 @@ class SocialclassData extends dnd5e.dataModels.ItemDataModel.mixin(dnd5e.dataMod
 
 	}
 
-
 Hooks.on('init', async function () {
 	
 	// const flag = this.getFlag('ras5e', 'fatedice');
@@ -92,17 +91,16 @@ Hooks.on('init', async function () {
 	// 	};
 
 
+	
 
 	Object.assign(CONFIG.Item.typeLabels, { socialclass: "TYPES.Item.socialclass" });
+	Object.assign(CONFIG.Item.typeLabels, { socialclass: "TYPES.Item.path" });
 	Object.assign(CONFIG.DND5E.featureTypes.race, {	subtypes: { birthfeat: "RAS5E.BirthTrait" }	});
 	Object.assign(CONFIG.DND5E.featureTypes.class.subtypes, { attuned: "RAS5E.WeaponAttune" } );
 	
 	dnd5e.utils.preLocalize("featureTypes.race.subtypes");
 	Object.assign(CONFIG.Item.dataModels, { "ras5e.socialclass": SocialclassData });
-
 	Object.assign(CONFIG.DND5E.sourceBooks, { "R&S Core": "SOURCE.BOOK.RAS" });
-
-	
 
 	CONFIG.DND5E.armorIds = {
 		buckler: "Compendium.ras5e.rands-items.Item.VMI8z8wjkIXT2r5z",
@@ -336,12 +334,112 @@ Hooks.on('init', async function () {
 
 }, "WRAPPER");
 });
-
 // Function to listen for item usage
 Hooks.on('dnd5e.preUseItem', async (item5e, event1, event2) => {
 	const surgeID = "Compendium.ras5e.rands-classes.Item.iXIuClKxzyJkSPwJ";
 	const releaseID = "Compendium.ras5e.rands-classes.Item.mcb8yRfW7t6kpSZE";
 	const furyID = "Compendium.ras5e.rands-classes.Item.lHORJ64My0cH52Nk";
+	const concussiveID = "Compendium.ras5e.rands-classes.Item.ihBcq3r3PWrMS6Iu";
+	const sweepID = "Compendium.ras5e.rands-classes.Item.mNJ8U9BERxmT8y12";
+	
+	// Check if the used item matches the specific UUID
+	if (item5e._stats.compendiumSource === sweepID) {
+		
+		// Prevent the default popup
+		event2.event.preventDefault();
+		event2.event.stopPropagation();
+		event2.configureDialog = false;
+		event2.createMessage = false;
+		event2.flags.dnd5e.use.consumedResource = false;
+
+		// Prompt the user for the number of items to use
+		let dialog = new Dialog({
+		title: "Choose Ability",
+		content: `
+			<form>
+				<div class="form-group">
+					<label>Which ability should be used for the saving throw?</label>
+					<select name="ability">
+						<option value="str">Strength</option>
+						<option value="dex">Dexterity</option>
+					</select>
+				</div>
+			</form>
+		`,
+		buttons: {
+			use: {
+				label: "Use",
+				callback: async (html) => {
+					const selectedScore = html.find('[name="ability"]').val();
+					item5e.system.save.ability = selectedScore;
+					item5e.system.save.dc = 10;
+					item5e.displayCard();
+				}
+			},
+			cancel: {
+				label: "Cancel"
+			}
+		},
+		default: "use"
+	});
+	dialog.render(true);
+	}
+		// Check if the used item matches the specific UUID
+		if (item5e._stats.compendiumSource === concussiveID) {
+			// Hooks.on("renderChatMessage", (message, html, data) => {
+			// 	console.log(message);
+			// 	console.log(data);
+			// });
+			
+			// Prevent the default popup
+			event2.event.preventDefault();
+			event2.event.stopPropagation();
+			event2.configureDialog = false;
+			event2.createMessage = false;
+			event2.flags.dnd5e.use.consumedResource = false;
+
+			    // Retrieve the actor's equipped weapons
+				const actor = item5e.parent;
+				const equippedWeapons = actor.items.filter(item => item.type === 'weapon' && item.system.equipped && item.system.damage.parts.join().includes("bludgeoning"));
+
+				// Generate options for the select form
+				const weaponOptions = equippedWeapons.map(weapon => {
+					return `<option value="${weapon.id}">${weapon.name}</option>`;
+				}).join('');
+
+			// Prompt the user for the number of items to use
+			let dialog = new Dialog({
+			title: "Choose Weapon",
+			content: `
+				<form>
+					<div class="form-group">
+						<label>Which equipped weapon do you want to use?</label>
+						<select name="weapon">
+							${weaponOptions}
+						</select>
+					</div>
+				</form>
+			`,
+			buttons: {
+				use: {
+					label: "Use",
+					callback: async (html) => {
+						const selectedWeaponId = html.find('[name="weapon"]').val();
+						const selectedWeapon = actor.items.get(selectedWeaponId);
+						console.log(`Selected Weapon: ${selectedWeapon.name}`);
+						const concussiveDamage = selectedWeapon.system.damage.parts[0][0];
+						actor.setFlag('ras5e', 'concussiveDamage', { value: concussiveDamage });
+						item5e.displayCard();
+					}
+				},
+				cancel: {
+					label: "Cancel"
+				}
+			},
+			default: "use"
+		});
+		dialog.render(true);
+		}
 	// Check if the used item matches the specific UUID
 	if (item5e._stats.compendiumSource === surgeID) {
 		// Hooks.on("renderChatMessage", (message, html, data) => {
@@ -507,7 +605,14 @@ Hooks.on('dnd5e.preUseItem', async (item5e, event1, event2) => {
 // 		console.log(roll.parts);
 // 	}
 // });
-
+Hooks.on('dnd5e.preRollDamage', (item5e, dialog) => {
+	if (dialog.title.includes("Concussive Blow - Damage Roll")) {
+		const concussiveDamage = item5e.parent.getFlag('ras5e', 'concussiveDamage').value;
+		const concussiveRoll = {"parts": [concussiveDamage], "type": "bludgeoning", "properties": []};
+		dialog.rollConfigs.push(concussiveRoll);
+		
+	}
+});
 // Hooks.on('renderDialog', (dialog, html) => {
 // 	if (dialog.data.title.includes("Attack Roll") && preFury > 0) {
 // 		const options = Array.fromRange(preFury).reduce((acc, e) => {
@@ -541,7 +646,6 @@ Hooks.on('dnd5e.preUseItem', async (item5e, event1, event2) => {
 // 		console.log(roll)
 // 	}
 // });
-
 // Function to consume items
 async function consumeItems(item, quantity) {
 	const actor = item.parent;
@@ -675,4 +779,4 @@ Hooks.on('renderActorSheet5eCharacter2', async function (app, html, data) {
 
     //     $(html).find(".dnd5e.sheet.actor.character").css("min-height", "823px");
     // }
-    });
+});
