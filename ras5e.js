@@ -100,6 +100,7 @@ Hooks.on('init', async function () {
 	
 	dnd5e.utils.preLocalize("featureTypes.race.subtypes");
 	Object.assign(CONFIG.Item.dataModels, { "ras5e.socialclass": SocialclassData });
+	Object.assign(CONFIG.Item.dataModels, { "ras5e.path": SocialclassData });
 	Object.assign(CONFIG.DND5E.sourceBooks, { "R&S Core": "SOURCE.BOOK.RAS" });
 
 	CONFIG.DND5E.armorIds = {
@@ -179,10 +180,10 @@ Hooks.on('init', async function () {
 		enh: { label: "RAS5E.Enhanced" },
 		ref: { label: "RAS5E.Reinforced" }
 	});
-	Object.assign(CONFIG.DND5E.toolIds, {
-		scribes: "Compendium.ras5e.rands-items.Item.vHFO33zANRREfX2D",
-		farming: "Compendium.ras5e.rands-items.Item.rzHNLWcw9NSt5c57",
-		stonecarver: "Compendium.ras5e.rands-items.Item.47YCovSsldmW16Nr"
+	Object.assign(CONFIG.DND5E.tools, {
+		scribes: { ability: "int", id: "Compendium.ras5e.rands-items.Item.vHFO33zANRREfX2D" },
+		farming: { ability: "int", id: "Compendium.ras5e.rands-items.Item.rzHNLWcw9NSt5c57" },
+		stonecarver: { ability: "int", id: "Compendium.ras5e.rands-items.Item.47YCovSsldmW16Nr"}
 	});
 	Object.assign(CONFIG.DND5E.spellcastingTypes.leveled.progression, {	mystic: { label: "RAS5E.SpellProgMyst", divisor: 1, roundUp: true} });
 	Object.assign(CONFIG.DND5E.spellProgression, { mystic: "RAS5E.SpellProgMyst" });
@@ -334,258 +335,261 @@ Hooks.on('init', async function () {
 
 }, "WRAPPER");
 });
+Hooks.on('renderActivityChoiceDialog', (dialog, html) => {
+	if (dialog.item.identifier === "concussive-blow") {
+		dialog.classList.add('hide-dialog');
+		// Retrieve the actor's equipped weapons
+		const actor = dialog.item.parent;
+		const equippedWeapons = actor.items._source.filter(item => item.type === 'weapon' && item.system.equipped && item.system.damage.base.types.includes("bludgeoning"));
+
+		// Generate options for the select form
+		const weaponOptions = equippedWeapons.map(weapon => {
+			return `<option value="${weapon._id}">${weapon.name}</option>`;
+		}).join('');
+
+		console.log(actor);
+		console.log(equippedWeapons);
+
+	// Prompt the user for the number of items to use
+	let prompt = new Dialog({
+	title: "Choose a Weapon",
+	content: `
+		<form>
+			<div class="form-group">
+				<label>Which equipped weapon do you want to use?</label>
+				<select name="weapon">
+					${weaponOptions}
+				</select>
+			</div>
+		</form>
+	`,
+	render: html => { 
+		const closeBtn = html.find("control")
+		console.log(closeBtn);
+	},
+	buttons: {
+		use: {
+			label: "Use",
+			callback: async (html) => {
+				const selectedWeaponId = html.find('[name="weapon"]').val();
+				const selectedWeapon = actor.items.get(selectedWeaponId);
+				console.log(`Selected Weapon: ${selectedWeapon.name}`);
+				const concussiveDamageNum = selectedWeapon.system.damage.base.number;
+				const concussiveDamageDie = selectedWeapon.system.damage.base.denomination;
+				const concussiveDamage = `${concussiveDamageNum}d${concussiveDamageDie}`;
+				actor.setFlag('ras5e', 'concussiveDamage', { value: concussiveDamage });
+				dialog.classList.remove('hide-dialog');
+			}
+		},
+		cancel: {
+			label: "Cancel",
+			callback: async (html) => {
+				dialog.close();
+			}
+		}
+	},
+	default: "use"
+}, {
+	classes: ["application", "dnd5e2", "activity-usage"]
+});
+prompt.render(true);
+	}
+});
+Hooks.on('dnd5e.preRollDamageV2', (dialog, html, data) => {
+	if (dialog.subject.parent.identifier === "concussive-blow") {
+		const concussiveDamage = dialog.subject.actor.getFlag('ras5e', 'concussiveDamage').value;
+		const dmgFormula = dialog.rolls[0].parts[0];
+		const concussiveRoll = `${dmgFormula}+${concussiveDamage}`;
+		dialog.rolls[0].parts[0] = concussiveRoll;
+		
+	}
+});
+// Hooks.on('dnd5e.postUseActivity', async (activity, event1, event2) => {
+// 	const surgeID = "soul-surge";
+// 	const releaseID = "soul-release";
+// 	const furyID = "fenrir-fury";
+// 	const concussiveID = "concussive-blow";
+
+// 	console.log(activity);
+// 	console.log(event1);
+// 	console.log(event2);
+	
+// 		// Check if the used item matches the specific UUID
+// 		if (activity.parent.identifier === concussiveID) {
+// 			const concussiveDamage = activity.actor.getFlag('ras5e', 'concussiveDamage').value;
+// 			const dmgFormula = activity.damage.parts[0].custom.formula;
+// 			console.log(concussiveDamage);
+// 			console.log(activity.damage.parts);
+// 			activity.damage.parts[0]._source.custom.formula = `${dmgFormula}+${concussiveDamage}`;
+// 			activity.damage.parts[0].custom.formula = `${dmgFormula}+${concussiveDamage}`;
+// 		}
+// 	});
 // Function to listen for item usage
-Hooks.on('dnd5e.preUseItem', async (item5e, event1, event2) => {
-	const surgeID = "Compendium.ras5e.rands-classes.Item.iXIuClKxzyJkSPwJ";
-	const releaseID = "Compendium.ras5e.rands-classes.Item.mcb8yRfW7t6kpSZE";
-	const furyID = "Compendium.ras5e.rands-classes.Item.lHORJ64My0cH52Nk";
-	const concussiveID = "Compendium.ras5e.rands-classes.Item.ihBcq3r3PWrMS6Iu";
-	const sweepID = "Compendium.ras5e.rands-classes.Item.mNJ8U9BERxmT8y12";
+Hooks.on('dnd5e.preUseActivity', async (activity, event1, event2) => {
+	const surgeID = "soul-surge";
+	const releaseID = "soul-release";
+	const furyID = "fenrir-fury";
+	const concussiveID = "concussive-blow";
+
+	// console.log(activity);
+	// console.log(event1);
+	// console.log(event2);
 	
-	// Check if the used item matches the specific UUID
-	if (item5e._stats.compendiumSource === sweepID) {
+		// // Check if the used item matches the specific UUID
+		// if (activity.parent.identifier === concussiveID) {
+		// 	const concussiveDamage = activity.actor.getFlag('ras5e', 'concussiveDamage').value;
+		// 	const dmgFormula = activity.damage.parts[0].custom.formula;
+		// 	console.log(concussiveDamage);
+		// 	console.log(activity.damage.parts);
+		// 	activity.damage.parts[0]._source.custom.formula = `${dmgFormula}+${concussiveDamage}`;
+		// 	activity.damage.parts[0].custom.formula = `${dmgFormula}+${concussiveDamage}`;
+		// }
+	// // Check if the used item matches the specific UUID
+	// if (activity.parent.identifier === surgeID) {
+	// 	// Hooks.on("renderChatMessage", (message, html, data) => {
+	// 	// 	console.log(message);
+	// 	// 	console.log(data);
+	// 	// });
 		
-		// Prevent the default popup
-		event2.event.preventDefault();
-		event2.event.stopPropagation();
-		event2.configureDialog = false;
-		event2.createMessage = false;
-		event2.flags.dnd5e.use.consumedResource = false;
-
-		// Prompt the user for the number of items to use
-		let dialog = new Dialog({
-		title: "Choose Ability",
-		content: `
-			<form>
-				<div class="form-group">
-					<label>Which ability should be used for the saving throw?</label>
-					<select name="ability">
-						<option value="str">Strength</option>
-						<option value="dex">Dexterity</option>
-					</select>
-				</div>
-			</form>
-		`,
-		buttons: {
-			use: {
-				label: "Use",
-				callback: async (html) => {
-					const selectedScore = html.find('[name="ability"]').val();
-					item5e.system.save.ability = selectedScore;
-					item5e.system.save.dc = 10;
-					item5e.displayCard();
-				}
-			},
-			cancel: {
-				label: "Cancel"
-			}
-		},
-		default: "use"
-	});
-	dialog.render(true);
-	}
-		// Check if the used item matches the specific UUID
-		if (item5e._stats.compendiumSource === concussiveID) {
-			// Hooks.on("renderChatMessage", (message, html, data) => {
-			// 	console.log(message);
-			// 	console.log(data);
-			// });
-			
-			// Prevent the default popup
-			event2.event.preventDefault();
-			event2.event.stopPropagation();
-			event2.configureDialog = false;
-			event2.createMessage = false;
-			event2.flags.dnd5e.use.consumedResource = false;
-
-			    // Retrieve the actor's equipped weapons
-				const actor = item5e.parent;
-				const equippedWeapons = actor.items.filter(item => item.type === 'weapon' && item.system.equipped && item.system.damage.parts.join().includes("bludgeoning"));
-
-				// Generate options for the select form
-				const weaponOptions = equippedWeapons.map(weapon => {
-					return `<option value="${weapon.id}">${weapon.name}</option>`;
-				}).join('');
-
-			// Prompt the user for the number of items to use
-			let dialog = new Dialog({
-			title: "Choose Weapon",
-			content: `
-				<form>
-					<div class="form-group">
-						<label>Which equipped weapon do you want to use?</label>
-						<select name="weapon">
-							${weaponOptions}
-						</select>
-					</div>
-				</form>
-			`,
-			buttons: {
-				use: {
-					label: "Use",
-					callback: async (html) => {
-						const selectedWeaponId = html.find('[name="weapon"]').val();
-						const selectedWeapon = actor.items.get(selectedWeaponId);
-						console.log(`Selected Weapon: ${selectedWeapon.name}`);
-						const concussiveDamage = selectedWeapon.system.damage.parts[0][0];
-						actor.setFlag('ras5e', 'concussiveDamage', { value: concussiveDamage });
-						item5e.displayCard();
-					}
-				},
-				cancel: {
-					label: "Cancel"
-				}
-			},
-			default: "use"
-		});
-		dialog.render(true);
-		}
-	// Check if the used item matches the specific UUID
-	if (item5e._stats.compendiumSource === surgeID) {
-		// Hooks.on("renderChatMessage", (message, html, data) => {
-		// 	console.log(message);
-		// 	console.log(data);
-		// });
+	// 	// Prevent the default popup
+	// 	event2.event.preventDefault();
+	// 	event2.event.stopPropagation();
+	// 	event2.configureDialog = false;
+	// 	event2.createMessage = false;
+	// 	event2.flags.dnd5e.use.consumedResource = false;
+	// 	// Prompt the user for the number of items to use
+	// 	let dialog = new Dialog({
+	// 	title: "Use Items",
+	// 	content: `
+	// 		<form>
+	// 		<div class="form-group">
+	// 			<label>How many items do you want to use?</label>
+	// 			<input type="number" name="quantity" min="1" value="1"/>
+	// 		</div>
+	// 		</form>
+	// 	`,
+	// 	buttons: {
+	// 		use: {
+	// 		label: "Use",
+	// 		callback: async (html) => {
+	// 			const quantity = parseInt(html.find('[name="quantity"]').val());
+	// 			await consumeItems(item5e, quantity);
+	// 		}
+	// 		},
+	// 		cancel: {
+	// 		label: "Cancel"
+	// 		}
+	// 	},
+	// 	default: "use"
+	// 	});
+	// 	dialog.render(true);
+	// }
+	// if (activity.parent.identifier === releaseID) {
+	// 	// Hooks.on("renderChatMessage", (message, html, data) => {
+	// 	// 	console.log(message);
+	// 	// 	console.log(data);
+	// 	// });
 		
-		// Prevent the default popup
-		event2.event.preventDefault();
-		event2.event.stopPropagation();
-		event2.configureDialog = false;
-		event2.createMessage = false;
-		event2.flags.dnd5e.use.consumedResource = false;
-		// Prompt the user for the number of items to use
-		let dialog = new Dialog({
-		title: "Use Items",
-		content: `
-			<form>
-			<div class="form-group">
-				<label>How many items do you want to use?</label>
-				<input type="number" name="quantity" min="1" value="1"/>
-			</div>
-			</form>
-		`,
-		buttons: {
-			use: {
-			label: "Use",
-			callback: async (html) => {
-				const quantity = parseInt(html.find('[name="quantity"]').val());
-				await consumeItems(item5e, quantity);
-			}
-			},
-			cancel: {
-			label: "Cancel"
-			}
-		},
-		default: "use"
-		});
-		dialog.render(true);
-	}
-	if (item5e._stats.compendiumSource === releaseID) {
-		// Hooks.on("renderChatMessage", (message, html, data) => {
-		// 	console.log(message);
-		// 	console.log(data);
-		// });
+	// 	// Prevent the default popup
+	// 	event1.createMeasuredTemplate = false;
+	// 	event2.event.preventDefault();
+	// 	event2.event.stopPropagation();
+	// 	event2.configureDialog = false;
+	// 	event2.createMessage = false;
+	// 	event2.flags.dnd5e.use.consumedResource = false;
+	// 	// Prompt the user for the number of items to use
+	// 	let dialog = new Dialog({
+	// 	title: "Use Items",
+	// 	content: `
+	// 		<form>
+	// 		<div class="form-group">
+	// 			<label>How many items do you want to use?</label>
+	// 			<input type="number" name="quantity" min="1" value="1"/>
+	// 		</div>
+	// 		</form>
+	// 	`,
+	// 	buttons: {
+	// 		use: {
+	// 		label: "Use",
+	// 		callback: async (html) => {
+	// 			const quantity = parseInt(html.find('[name="quantity"]').val());
+	// 			await consumeItems(item5e, quantity);
+	// 		}
+	// 		},
+	// 		cancel: {
+	// 		label: "Cancel"
+	// 		}
+	// 	},
+	// 	default: "use"
+	// 	});
+	// 	dialog.render(true);
+	// }
+	// if (activity.parent.identifier === furyID) {
 		
-		// Prevent the default popup
-		event1.createMeasuredTemplate = false;
-		event2.event.preventDefault();
-		event2.event.stopPropagation();
-		event2.configureDialog = false;
-		event2.createMessage = false;
-		event2.flags.dnd5e.use.consumedResource = false;
-		// Prompt the user for the number of items to use
-		let dialog = new Dialog({
-		title: "Use Items",
-		content: `
-			<form>
-			<div class="form-group">
-				<label>How many items do you want to use?</label>
-				<input type="number" name="quantity" min="1" value="1"/>
-			</div>
-			</form>
-		`,
-		buttons: {
-			use: {
-			label: "Use",
-			callback: async (html) => {
-				const quantity = parseInt(html.find('[name="quantity"]').val());
-				await consumeItems(item5e, quantity);
-			}
-			},
-			cancel: {
-			label: "Cancel"
-			}
-		},
-		default: "use"
-		});
-		dialog.render(true);
-	}
-	if (item5e._stats.compendiumSource === furyID) {
+	// 	// Hooks.on("renderChatMessage", (message, html, data) => {
+	// 	// 	console.log(message);
+	// 	// 	console.log(data);
+	// 	// });
 		
-		// Hooks.on("renderChatMessage", (message, html, data) => {
-		// 	console.log(message);
-		// 	console.log(data);
-		// });
-		
-		// Prevent the default popup
-		// event1.consumeUsage = false;
-		// event2.flags.dnd5e.use.consumedUsage = false;
-		event2.configureDialog = false;
-		// event2.createMessage = false;
+	// 	// Prevent the default popup
+	// 	// event1.consumeUsage = false;
+	// 	// event2.flags.dnd5e.use.consumedUsage = false;
+	// 	event2.configureDialog = false;
+	// 	// event2.createMessage = false;
 
-		const item = item5e;
-		const actor = item.parent;
-		const options = Array.fromRange(item.system.uses.value).reduce((acc, e) => {
-		return acc + `<option value="${e+1}">${e+1} charges</option>`;
-		}, "");
-		const content = `
-		<form> <div class="form-group">
-		<label>Charges:</label>
-		<div class="form-fields">
-		<select>${options}</select>
-		</div></div></form>`;
-		if (item.system.uses.value != 0) {
-			const num = await Dialog.prompt({
-			title: "Consume Charges",
-			content,
-			rejectClose: false,
-			callback: (html) => html[0].querySelector("select").value
-			});
-			if(!num) return;
-			const value = Number(num);
-			await item.update({ "system.uses.value": item.system.uses.value - value });
-			actor.setFlag('ras5e', 'furyUsed', { value: value });
-			ui.notifications.info(`${value} ${item.name}(s) used.`);
-		}
+	// 	const item = item5e;
+	// 	const actor = item.parent;
+	// 	const options = Array.fromRange(item.system.uses.value).reduce((acc, e) => {
+	// 	return acc + `<option value="${e+1}">${e+1} charges</option>`;
+	// 	}, "");
+	// 	const content = `
+	// 	<form> <div class="form-group">
+	// 	<label>Charges:</label>
+	// 	<div class="form-fields">
+	// 	<select>${options}</select>
+	// 	</div></div></form>`;
+	// 	if (item.system.uses.value != 0) {
+	// 		const num = await Dialog.prompt({
+	// 		title: "Consume Charges",
+	// 		content,
+	// 		rejectClose: false,
+	// 		callback: (html) => html[0].querySelector("select").value
+	// 		});
+	// 		if(!num) return;
+	// 		const value = Number(num);
+	// 		await item.update({ "system.uses.value": item.system.uses.value - value });
+	// 		actor.setFlag('ras5e', 'furyUsed', { value: value });
+	// 		ui.notifications.info(`${value} ${item.name}(s) used.`);
+	// 	}
 	
 
-		// // Prompt the user for the number of items to use
-		// let dialog = new Dialog({
-		// title: "Use Fury Charges",
-		// content: `
-		// 	<form>
-		// 	<div class="form-group">
-		// 		<label>How many stacks do you want to use?</label>
-		// 		<input type="number" name="uses" min="1" value="1"/>
-		// 	</div>
-		// 	</form>
-		// `,
-		// buttons: {
-		// 	use: {
-		// 	label: "Use",
-		// 	callback: async (html) => {
-		// 		const charges = parseInt(html.find('[name="uses"]').val());
-		// 		await consumeFury(item5e, charges);
-		// 	}
-		// 	},
-		// 	cancel: {
-		// 	label: "Cancel"
-		// 	}
-		// },
-		// default: "use"
-		// });
-		// dialog.render(true);
-	}
+	// 	// // Prompt the user for the number of items to use
+	// 	// let dialog = new Dialog({
+	// 	// title: "Use Fury Charges",
+	// 	// content: `
+	// 	// 	<form>
+	// 	// 	<div class="form-group">
+	// 	// 		<label>How many stacks do you want to use?</label>
+	// 	// 		<input type="number" name="uses" min="1" value="1"/>
+	// 	// 	</div>
+	// 	// 	</form>
+	// 	// `,
+	// 	// buttons: {
+	// 	// 	use: {
+	// 	// 	label: "Use",
+	// 	// 	callback: async (html) => {
+	// 	// 		const charges = parseInt(html.find('[name="uses"]').val());
+	// 	// 		await consumeFury(item5e, charges);
+	// 	// 	}
+	// 	// 	},
+	// 	// 	cancel: {
+	// 	// 	label: "Cancel"
+	// 	// 	}
+	// 	// },
+	// 	// default: "use"
+	// 	// });
+	// 	// dialog.render(true);
+	// }
 });
 // var preFury = null;
 // var afterFury = null;
@@ -605,14 +609,7 @@ Hooks.on('dnd5e.preUseItem', async (item5e, event1, event2) => {
 // 		console.log(roll.parts);
 // 	}
 // });
-Hooks.on('dnd5e.preRollDamage', (item5e, dialog) => {
-	if (dialog.title.includes("Concussive Blow - Damage Roll")) {
-		const concussiveDamage = item5e.parent.getFlag('ras5e', 'concussiveDamage').value;
-		const concussiveRoll = {"parts": [concussiveDamage], "type": "bludgeoning", "properties": []};
-		dialog.rollConfigs.push(concussiveRoll);
-		
-	}
-});
+
 // Hooks.on('renderDialog', (dialog, html) => {
 // 	if (dialog.data.title.includes("Attack Roll") && preFury > 0) {
 // 		const options = Array.fromRange(preFury).reduce((acc, e) => {
@@ -779,4 +776,4 @@ Hooks.on('renderActorSheet5eCharacter2', async function (app, html, data) {
 
     //     $(html).find(".dnd5e.sheet.actor.character").css("min-height", "823px");
     // }
-});
+    });
