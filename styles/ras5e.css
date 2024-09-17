@@ -4,6 +4,9 @@
   .dnd5e2.sheet.actor.character .sheet-body .pill-lg.socialclass {
   cursor: pointer;
 }
+.hide-dialog {
+  display: none;
+}
 .dnd5e2.sheet.actor.character .sheet-body .pill-lg.socialclass:hover:not(:has(a:hover)) {
   box-shadow: 0 0 12px var(--dnd5e-color-gold);
 }
