@@ -30,6 +30,33 @@ Handlebars.registerHelper('if_eq', function(a, b, opts) {
         return opts.inverse(this);
     }
 });
+Handlebars.registerHelper('if_comp', function (a, operator, b, options) {
+
+    switch (operator) {
+        case '==':
+            return (a == b) ? options.fn(this) : options.inverse(this);
+        case '===':
+            return (a === b) ? options.fn(this) : options.inverse(this);
+        case '!=':
+            return (a != b) ? options.fn(this) : options.inverse(this);
+        case '!==':
+            return (a !== b) ? options.fn(this) : options.inverse(this);
+        case '<':
+            return (a < b) ? options.fn(this) : options.inverse(this);
+        case '<=':
+            return (a <= b) ? options.fn(this) : options.inverse(this);
+        case '>':
+            return (a > b) ? options.fn(this) : options.inverse(this);
+        case '>=':
+            return (a >= b) ? options.fn(this) : options.inverse(this);
+        case '&&':
+            return (a && b) ? options.fn(this) : options.inverse(this);
+        case '||':
+            return (a || b) ? options.fn(this) : options.inverse(this);
+        default:
+            return options.inverse(this);
+    }
+});
 
 class SocialclassData extends dnd5e.dataModels.ItemDataModel.mixin(dnd5e.dataModels.item.ItemDescriptionTemplate) {
 
@@ -70,15 +97,9 @@ class SocialclassData extends dnd5e.dataModels.ItemDataModel.mixin(dnd5e.dataMod
 	}
 
 Hooks.on('init', async function () {
+
 	
-	// const flag = this.getFlag('ras5e', 'fatedice');
-	// 	if (flag == undefined) {
-	// 		this.setFlag('ras5e', 'fatedice', {
-	// 			label: "RAS5E.FateDice",
-	// 			value: 0,
-	// 			max: 0
-	// 		});
-	// 	};
+	
 
 	// 	const wyrdFlag = this.getFlag('ras5e', 'wyrd');
 	// 	if (wyrdFlag == undefined) {
@@ -159,6 +180,7 @@ Hooks.on('init', async function () {
 		crossbowLight: "Compendium.ras5e.rands-items.Item.wyXFTZUUlanrMH91",
 		huntingBow: "Compendium.ras5e.rands-items.Item.tDWWmBiKCszsz9eE",
 		sling: "Compendium.ras5e.rands-items.Item.T7O3UjcvcHfvlclm"
+	
 	};
 				
 	Object.assign(CONFIG.DND5E.armorTypes, { helmet: "RAS5E.Helmet" });
@@ -247,96 +269,27 @@ Hooks.on('init', async function () {
 		attican: "RAS5E.LanguagesAttican",
 		elvish: "RAS5E.LanguagesElvish",
 		giant: "RAS5E.LanguagesGiant",
-		oghma: "RAS5E.LanguagesOghma"
+		oldtongue: "RAS5E.LanguagesOldTongue",
+		oghma: "RAS5E.LanguagesOghma",
+		runic: "RAS5E.LanguagesRunic"
 	};
-
-	CONFIG.DND5E.newSkills = [
-		{
-			skl: "anc",
-			ability: "wis"
-		},
-	];
-
-
-	// Remove PP and EP from showing up on character sheet displays since we don't use them in LOTR5E	
-	libWrapper.register("ras5e", "game.dnd5e.applications.actor.ActorSheet5eCharacter.prototype.getData", async function patchedActorSheet5eCharacter(wrapped, ...args) {
-
-		const data = await wrapped(...args);
-		delete data.system.currency.pp;
-		delete data.system.currency.ep;
-
-		// Return data to the sheet
-		return data
-
-	}, "WRAPPER");
-
-	// Remove PP and EP from showing up on vehicle sheet displays since we don't use them in LOTR5E	
-	libWrapper.register("ras5e", "game.dnd5e.applications.actor.ActorSheet5eVehicle.prototype.getData", async function patchedActorSheet5eCharacter(wrapped, ...args) {
-
-		const data = await wrapped(...args);
-		delete data.system.currency.pp;
-		delete data.system.currency.ep;
-
-		// Return data to the sheet
-		return data
-	}, "WRAPPER");
-
-	libWrapper.register("ras5e", "CONFIG.Actor.documentClass.prototype.prepareDerivedData", function patchedPrepareDerivedData(wrapped, ...args) {
-    wrapped(...args);
-
-	// console.log(this.flags.ras5e)
-
-	// if (this.flags.ras5e.fatedice == undefined) {
-	// 	console.log("undefined!")
-	// }
-
-	// 	const wyrdFlag = this.getFlag('ras5e', 'wyrd');
-	// 	if (wyrdFlag == undefined) {
-	// 		this.setFlag('ras5e', 'wyrd', {
-	// 			label: "RAS5E.Wyrd",
-	// 			value: 0,
-	// 			max: 20,
-	// 			pct: 0.00
-	// 		});
-	// 	};
-
-		    //FIX CUSTOM SKILL ABILITIES
-		const source = this._source.system;
-		const newSkills = CONFIG.DND5E.newSkills;
-		const skillData = this.system.skills;
-		const skillSource = source.skills;
+	
+	// Patch initiative roll to use 1d10 instead of 1d20
+	libWrapper.register("ras5e", "game.dnd5e.documents.Actor5e.prototype.getInitiativeRoll", function patchedInitiativeRoll(wrapped, ...args) {
 		
-		if ( this.type != "vehicle" && this.type != "group" ) {
-		newSkills.forEach(e => {
-			let sklName = e["skl"];
-			let sklAbility = e["ability"];
-			if (typeof (skillData[sklName]) == "undefined") {
-				skillData[sklName] = new Object();
-				skillData[sklName].value = 0;
-				skillData[sklName].ability = sklAbility;
-			}
-			if (typeof (skillData[sklName].ability) == "undefined") {
-				skillData[sklName].ability = [sklAbility];
-			}
-		});
-		newSkills.forEach(e => {
-		let sklName = e["skl"];
-		let sklAbility = e["ability"];
-		if (typeof (skillSource[sklName]) == "undefined") {
-			skillSource[sklName] = new Object();
-			skillSource[sklName].value = 0;
-			skillSource[sklName].ability = sklAbility;
-		}
-		if (typeof (skillSource[sklName].ability) == "undefined") {
-			skillSource[sklName].ability = [sklAbility];
-	}
-	});
-	};
-
-}, "WRAPPER");
+		const d20Roll = wrapped(...args);
+		const re = new RegExp("(1d20)", "g");
+		d20Roll.terms[0]._faces = 10;
+		d20Roll._formula = d20Roll._formula.replace(re, "1d10");
+		console.log(d20Roll);
+		return d20Roll;
+	
+	}, "mixed")
 });
+
 Hooks.on('renderActivityChoiceDialog', (dialog, html) => {
-	if (dialog.item.identifier === "concussive-blow") {
+			
+	if (dialog.item.identifier === "concussive-blow" || dialog.item.identifier === "giant-feller") {
 		dialog.classList.add('hide-dialog');
 		// Retrieve the actor's equipped weapons
 		const actor = dialog.item.parent;
@@ -365,7 +318,6 @@ Hooks.on('renderActivityChoiceDialog', (dialog, html) => {
 	`,
 	render: html => { 
 		const closeBtn = html.find("control")
-		console.log(closeBtn);
 	},
 	buttons: {
 		use: {
@@ -374,10 +326,18 @@ Hooks.on('renderActivityChoiceDialog', (dialog, html) => {
 				const selectedWeaponId = html.find('[name="weapon"]').val();
 				const selectedWeapon = actor.items.get(selectedWeaponId);
 				console.log(`Selected Weapon: ${selectedWeapon.name}`);
+				if (dialog.item.identifier === "concussive-blow") {
 				const concussiveDamageNum = selectedWeapon.system.damage.base.number;
 				const concussiveDamageDie = selectedWeapon.system.damage.base.denomination;
 				const concussiveDamage = `${concussiveDamageNum}d${concussiveDamageDie}`;
 				actor.setFlag('ras5e', 'concussiveDamage', { value: concussiveDamage });
+				}
+				if (dialog.item.identifier === "giant-feller") {
+					const fellerDamageNum = selectedWeapon.system.damage.base.number;
+					const fellerDamageDie = selectedWeapon.system.damage.base.denomination;
+					const fellerDamage = `${fellerDamageNum}d${fellerDamageDie}`;
+					actor.setFlag('ras5e', 'fellerDamage', { value: fellerDamage });
+				}
 				dialog.classList.remove('hide-dialog');
 			}
 		},
@@ -395,272 +355,116 @@ Hooks.on('renderActivityChoiceDialog', (dialog, html) => {
 prompt.render(true);
 	}
 });
-Hooks.on('dnd5e.preRollDamageV2', (dialog, html, data) => {
+Hooks.on('dnd5e.preRollAttackV2', (attack, dialog, options) => {
+	if (attack.rolls[0].data.activity.attack.type.value === "ranged" && attack.subject.actor.getFlag('ras5e', 'watcherAccuracy') != undefined) {
+		const critChance = attack.rolls[0].options.criticalSuccess;
+		const watcherAccuracy = attack.rolls[0].data.flags.ras5e.watcherAccuracy.value
+		attack.rolls[0].options.criticalSuccess = critChance - watcherAccuracy;
+	}
+});
+Hooks.on('dnd5e.preRollDamageV2', (dialog, event, data) => {
 	if (dialog.subject.parent.identifier === "concussive-blow") {
 		const concussiveDamage = dialog.subject.actor.getFlag('ras5e', 'concussiveDamage').value;
-		const dmgFormula = dialog.rolls[0].parts[0];
-		const concussiveRoll = `${dmgFormula}+${concussiveDamage}`;
+		const concussiveDmgFormula = dialog.rolls[0].parts[0];
+		const concussiveRoll = `${concussiveDmgFormula}+${concussiveDamage}`;
 		dialog.rolls[0].parts[0] = concussiveRoll;
 		
 	}
+	if (dialog.subject.parent.identifier === "giant-feller") {
+		const fellerDamage = dialog.subject.actor.getFlag('ras5e', 'fellerDamage').value;
+		const fellerDmgFormula = dialog.rolls[0].parts[0];
+		const fellerRoll = `${fellerDmgFormula}+${fellerDamage}`;
+		dialog.rolls[0].parts[0] = fellerRoll;
+		
+	}
 });
-// Hooks.on('dnd5e.postUseActivity', async (activity, event1, event2) => {
-// 	const surgeID = "soul-surge";
-// 	const releaseID = "soul-release";
-// 	const furyID = "fenrir-fury";
-// 	const concussiveID = "concussive-blow";
-
-// 	console.log(activity);
-// 	console.log(event1);
-// 	console.log(event2);
-	
-// 		// Check if the used item matches the specific UUID
-// 		if (activity.parent.identifier === concussiveID) {
-// 			const concussiveDamage = activity.actor.getFlag('ras5e', 'concussiveDamage').value;
-// 			const dmgFormula = activity.damage.parts[0].custom.formula;
-// 			console.log(concussiveDamage);
-// 			console.log(activity.damage.parts);
-// 			activity.damage.parts[0]._source.custom.formula = `${dmgFormula}+${concussiveDamage}`;
-// 			activity.damage.parts[0].custom.formula = `${dmgFormula}+${concussiveDamage}`;
-// 		}
-// 	});
-// Function to listen for item usage
-Hooks.on('dnd5e.preUseActivity', async (activity, event1, event2) => {
-	const surgeID = "soul-surge";
-	const releaseID = "soul-release";
-	const furyID = "fenrir-fury";
-	const concussiveID = "concussive-blow";
-
-	// console.log(activity);
-	// console.log(event1);
-	// console.log(event2);
-	
-		// // Check if the used item matches the specific UUID
-		// if (activity.parent.identifier === concussiveID) {
-		// 	const concussiveDamage = activity.actor.getFlag('ras5e', 'concussiveDamage').value;
-		// 	const dmgFormula = activity.damage.parts[0].custom.formula;
-		// 	console.log(concussiveDamage);
-		// 	console.log(activity.damage.parts);
-		// 	activity.damage.parts[0]._source.custom.formula = `${dmgFormula}+${concussiveDamage}`;
-		// 	activity.damage.parts[0].custom.formula = `${dmgFormula}+${concussiveDamage}`;
-		// }
-	// // Check if the used item matches the specific UUID
-	// if (activity.parent.identifier === surgeID) {
-	// 	// Hooks.on("renderChatMessage", (message, html, data) => {
-	// 	// 	console.log(message);
-	// 	// 	console.log(data);
-	// 	// });
+Hooks.on('dnd5e.rollDamageV2', (dialog, event, data) => {
+	if (event.subject.parent.identifier === "soul-release") {
+		const soulsUsed = event.subject.actor.getFlag('ras5e', 'soulsUsed').value;
+		const newQuantity = soulsUsed - soulsUsed;
+		event.subject.actor.setFlag('ras5e', 'soulsUsed', { value: newQuantity });
 		
-	// 	// Prevent the default popup
-	// 	event2.event.preventDefault();
-	// 	event2.event.stopPropagation();
-	// 	event2.configureDialog = false;
-	// 	event2.createMessage = false;
-	// 	event2.flags.dnd5e.use.consumedResource = false;
-	// 	// Prompt the user for the number of items to use
-	// 	let dialog = new Dialog({
-	// 	title: "Use Items",
-	// 	content: `
-	// 		<form>
-	// 		<div class="form-group">
-	// 			<label>How many items do you want to use?</label>
-	// 			<input type="number" name="quantity" min="1" value="1"/>
-	// 		</div>
-	// 		</form>
-	// 	`,
-	// 	buttons: {
-	// 		use: {
-	// 		label: "Use",
-	// 		callback: async (html) => {
-	// 			const quantity = parseInt(html.find('[name="quantity"]').val());
-	// 			await consumeItems(item5e, quantity);
-	// 		}
-	// 		},
-	// 		cancel: {
-	// 		label: "Cancel"
-	// 		}
-	// 	},
-	// 	default: "use"
-	// 	});
-	// 	dialog.render(true);
-	// }
-	// if (activity.parent.identifier === releaseID) {
-	// 	// Hooks.on("renderChatMessage", (message, html, data) => {
-	// 	// 	console.log(message);
-	// 	// 	console.log(data);
-	// 	// });
-		
-	// 	// Prevent the default popup
-	// 	event1.createMeasuredTemplate = false;
-	// 	event2.event.preventDefault();
-	// 	event2.event.stopPropagation();
-	// 	event2.configureDialog = false;
-	// 	event2.createMessage = false;
-	// 	event2.flags.dnd5e.use.consumedResource = false;
-	// 	// Prompt the user for the number of items to use
-	// 	let dialog = new Dialog({
-	// 	title: "Use Items",
-	// 	content: `
-	// 		<form>
-	// 		<div class="form-group">
-	// 			<label>How many items do you want to use?</label>
-	// 			<input type="number" name="quantity" min="1" value="1"/>
-	// 		</div>
-	// 		</form>
-	// 	`,
-	// 	buttons: {
-	// 		use: {
-	// 		label: "Use",
-	// 		callback: async (html) => {
-	// 			const quantity = parseInt(html.find('[name="quantity"]').val());
-	// 			await consumeItems(item5e, quantity);
-	// 		}
-	// 		},
-	// 		cancel: {
-	// 		label: "Cancel"
-	// 		}
-	// 	},
-	// 	default: "use"
-	// 	});
-	// 	dialog.render(true);
-	// }
-	// if (activity.parent.identifier === furyID) {
-		
-	// 	// Hooks.on("renderChatMessage", (message, html, data) => {
-	// 	// 	console.log(message);
-	// 	// 	console.log(data);
-	// 	// });
-		
-	// 	// Prevent the default popup
-	// 	// event1.consumeUsage = false;
-	// 	// event2.flags.dnd5e.use.consumedUsage = false;
-	// 	event2.configureDialog = false;
-	// 	// event2.createMessage = false;
-
-	// 	const item = item5e;
-	// 	const actor = item.parent;
-	// 	const options = Array.fromRange(item.system.uses.value).reduce((acc, e) => {
-	// 	return acc + `<option value="${e+1}">${e+1} charges</option>`;
-	// 	}, "");
-	// 	const content = `
-	// 	<form> <div class="form-group">
-	// 	<label>Charges:</label>
-	// 	<div class="form-fields">
-	// 	<select>${options}</select>
-	// 	</div></div></form>`;
-	// 	if (item.system.uses.value != 0) {
-	// 		const num = await Dialog.prompt({
-	// 		title: "Consume Charges",
-	// 		content,
-	// 		rejectClose: false,
-	// 		callback: (html) => html[0].querySelector("select").value
-	// 		});
-	// 		if(!num) return;
-	// 		const value = Number(num);
-	// 		await item.update({ "system.uses.value": item.system.uses.value - value });
-	// 		actor.setFlag('ras5e', 'furyUsed', { value: value });
-	// 		ui.notifications.info(`${value} ${item.name}(s) used.`);
-	// 	}
-	
-
-	// 	// // Prompt the user for the number of items to use
-	// 	// let dialog = new Dialog({
-	// 	// title: "Use Fury Charges",
-	// 	// content: `
-	// 	// 	<form>
-	// 	// 	<div class="form-group">
-	// 	// 		<label>How many stacks do you want to use?</label>
-	// 	// 		<input type="number" name="uses" min="1" value="1"/>
-	// 	// 	</div>
-	// 	// 	</form>
-	// 	// `,
-	// 	// buttons: {
-	// 	// 	use: {
-	// 	// 	label: "Use",
-	// 	// 	callback: async (html) => {
-	// 	// 		const charges = parseInt(html.find('[name="uses"]').val());
-	// 	// 		await consumeFury(item5e, charges);
-	// 	// 	}
-	// 	// 	},
-	// 	// 	cancel: {
-	// 	// 	label: "Cancel"
-	// 	// 	}
-	// 	// },
-	// 	// default: "use"
-	// 	// });
-	// 	// dialog.render(true);
-	// }
+	}
 });
-// var preFury = null;
-// var afterFury = null;
-// Hooks.on('dnd5e.preRollAttack', (Item5e, roll) => {
-// 	const item = Item5e;
-// 	const actor = item.parent;
-// 	const furyFlag = actor.getFlag('ras5e', 'furyUsed')
-	
-// 	if (furyFlag.value > 0 ) {
-// 		preFury = furyFlag.value;
-// 		item.setFlag('ras5e', 'itemFury', {
-// 			val: preFury
-// 		});
-// 		furyMod = setAfterFury().onCall(async (roll) => {
-// 		roll.parts.push([furyMod]);
+Hooks.on('dnd5e.preUseActivity', async (activity, event1, event2, event3) => {
+
+	if (activity.name === "Capture Souls") {
+		const currentSouls = activity.actor.getFlag('ras5e', 'damnedSouls').value;
+		const maxSouls = activity.actor.getFlag('ras5e', 'damnedSouls').max;
+		if (currentSouls >= maxSouls) {
+			event3.create = false;
+			ui.notifications.warn("You have reached the maximum number of souls you can capture.");
+		}
+		else {
+		ui.notifications.info("Soul Captured.");
+		const newSouls = currentSouls + 1;
+		activity.actor.setFlag('ras5e', 'damnedSouls', { value: newSouls });
+		}
+	}
+	if (activity.item.identifier === "soul-release") {
+		const actor = activity.item.parent;
+		const item = actor.getFlag('ras5e', 'damnedSouls');
+		const itemQuantity = item.value;
+		if (!item || itemQuantity === 0) {
+			ui.notifications.error(`Character has no Captured Souls.`);
+			return;
+		}
+		const options = Array.fromRange(itemQuantity).reduce((acc, e) => {
+			return acc + `<option value="${e+1}">${e+1} Souls</option>`;
+			}, "");
+		let soulPrompt = new Dialog({
+			title: "Use Souls",
+			content: `
+				<form>
+				<div class="form-group">
+					<label>How many Souls do you want to use?</label>
+					<select>${options}</select>
+				</div>
+				</form>
+			`,
+			buttons: {
+				use: {
+				label: "Use",
+				callback: async (html) => {
+					const usedQuantity = parseInt(html.find('select').val());
+					await consumeSouls(activity, item, usedQuantity, actor);
+				}
+				},
+				cancel: {
+				label: "Cancel"
+				}
+			},
+			default: "use"
+			});
+		soulPrompt.render(true);
 		
-// 		console.log(roll.parts);
-// 	}
-// });
+		async function consumeSouls(activity, item, usedQuantity, actor) {
+				// Update the quantity
+				const newQuantity = item.value - usedQuantity;
+				actor.setFlag('ras5e', 'damnedSouls', { value: newQuantity });
+				actor.setFlag('ras5e', 'soulsUsed', { value: usedQuantity });
+				// Display a notification
+				ui.notifications.info(`${usedQuantity} Soul(s) used.`);
+		}
+	}
+});
 
-// Hooks.on('renderDialog', (dialog, html) => {
-// 	if (dialog.data.title.includes("Attack Roll") && preFury > 0) {
-// 		const options = Array.fromRange(preFury).reduce((acc, e) => {
-// 			return acc + `<option value="${e+1}">${e+1} charges</option>`;
-// 		}, "");
-
-// 		let dropdown = `
-// 		<form> <div class="form-group">
-// 		<label>Charges:</label>
-// 		<div class="form-fields">
-// 		<select id="fury-charges">${options}</select>
-// 		</div></div></form>`;
-
-// 		html.find('.dialog-content form div:last-child').after(dropdown);
-
-// 		// Add event listeners to dialog buttons
-//             $('.dialog-button').on('click', () => {
-				
-//                 const selectedCharges = parseInt(html.find('#fury-charges').val());
-// 				setAfterFury(selectedCharges)
-// 				console.log(selectedCharges);
-//             });
-// 	}
-// });
-// async function setAfterFury(selectedCharges) {
-// 	afterFury = selectedCharges;
-// }
-// Hooks.on('dnd5e.rollAttack', (Item5e, roll) => {
-// 	if (afterFury > 0) {
-// 		roll.data.mod = `${roll.data.mod} + ${afterFury}`;
-// 		console.log(roll)
-// 	}
-// });
 // Function to consume items
 async function consumeItems(item, quantity) {
 	const actor = item.parent;
-	const itemID = "Compendium.ras5e.rands-classes.Item.3ls2otXV7NR77iC3"; // Use the item's ID to find it in the actor's inventory
-	// Find the item in the actor's inventory
+	// Use the item's ID to find it in the actor's inventory
+	const itemID = "Compendium.ras5e.rands-classes.Item.3ls2otXV7NR77iC3";
 	const targetItem = actor.sourcedItems.get(itemID);
-
 	if (!targetItem) {
 		ui.notifications.error(`Item not found on the actor.`);
 	}
-
 	const itemData = targetItem.system;
-
 	// Check if the actor has enough items
 	if (itemData.quantity >= quantity) {
 		// Update the item quantity
 		await targetItem.update({ 'system.quantity': itemData.quantity - quantity });
 		actor.setFlag('ras5e', 'soulsUsed', { value: quantity });
+		// Display the item card in the chat and fire a notification
 		item.displayCard();
 		ui.notifications.info(`${quantity} ${targetItem.name}(s) used.`);
 	} else {
@@ -675,7 +479,7 @@ function formatText(value) {
 	return new Handlebars.SafeString(value?.replaceAll("\n", "<br>") ?? "");
 }
 Hooks.on('preCreateActor', async function (actor, data, options) {
-	
+	// Set the actor's fate dice and wyrd flags
 	await actor.updateSource({
 		flags: {
 			['ras5e']: {
@@ -693,41 +497,70 @@ Hooks.on('preCreateActor', async function (actor, data, options) {
 			}
 		}
 	});
-	// actor.setFlag('ras5e', 'fatedice', {
-	// 	label: "RAS5E.FateDice",
-	// 	value: 0,
-	// 	max: 0
-	// })
 });
-
-
-
-// });
+Hooks.on('preUpdateActor', async function (actor5e) {
+	const actor = actor5e;
+	// If the fate dice flag is doesn't exist, add it and set its value and max to 0
+	const fateFlag = actor.getFlag('ras5e', 'fatedice');
+	if (fateFlag == undefined) {
+			this.setFlag('ras5e', 'fatedice', {
+				label: "RAS5E.FateDice",
+				value: 0,
+				max: 0
+			});
+	}
+});
 Hooks.on('renderActorSheet5eCharacter2', async function (app, html, data) {
-	
 	const actor = data.actor;
 	const sheet5e = app.options.classes;
 	if (sheet5e.includes("dnd5e2", "character")) {
-		// const fateFlag = actor.getFlag('ras5e', 'fatedice');
+		const fateFlag = actor.getFlag('ras5e', 'fatedice');
+		const wyrdpct = Math.clamp((actor.flags.ras5e.wyrd.value / actor.flags.ras5e.wyrd.max) * 100, 0, 100).toFixed(2);
+		actor.setFlag('ras5e', 'wyrd', {
+			pct: wyrdpct
+		});
+		// Make sure the actor's max fate dice is always equal to their proficiency bonus
+		const prof = actor.system.attributes.prof;
+		if (fateFlag.max < prof || fateFlag.max > prof) {
+			actor.setFlag('ras5e', 'fatedice', {
+				max: prof
+			});
+		}
+		// If the actor sets their fate dice to a higher number than their max, set the current dice to the max value
+		if (fateFlag.value > fateFlag.max) {
+			actor.setFlag('ras5e', 'fatedice', {
+				value: prof
+			});
+		}
+		const fateBox = "/modules/ras5e/templates/ras5e-fate.hbs"
+		const fateHtml = await renderTemplate(fateBox, data);
+		var fateDiv = $(html).find('.sheet-header .left')[0];
+		$(fateHtml).insertAfter(fateDiv);
 
-		// const wyrdpct = Math.clamp((actor.flags.ras5e.wyrd.value / actor.flags.ras5e.wyrd.max) * 100, 0, 100).toFixed(2);
-		// actor.setFlag('ras5e', 'wyrd', {
-		// 	pct: wyrdpct
-		// });
-		// if (fateFlag.value > fateFlag.max) {
-		// 	actor.setFlag('ras5e', 'fatedice', {
-		// 		value: actor.system.attributes.prof
-		// 	});
-		// }
-			// const bio2 = "/modules/ras5e/templates/lotr-summary2.hbs"
-			// const bioHtml2 = await renderTemplate(bio2, data);
-			// var bioDiv2 = $(html).find('ul.characteristics li').last();
-			// bioDiv2.after(bioHtml2);
+		let diceBox = $(html).find('.ras-fatebox .meter .label')[0];
+		let dice = parseInt(fateFlag.max);
+		let currentDice = fateFlag.value;
+		// Add fateDice buttons equal to the actor's max fate dice
+		for (var i = 0; i < dice; i++) {
+			let maxDice = `<button class="fateDice" name="fateDice-${1+i}"></button>`;
+			$(diceBox).before(maxDice);
+		}
+		// Select all fateDice buttons
+		const fateDiceButtons = $(html).find('.fateDice').toArray();
 
-			const fateBox = "/modules/ras5e/templates/ras5e-fate.hbs"
-			const fateHtml = await renderTemplate(fateBox, data);
-			var fateDiv = $(html).find('.sheet-header .left')[0];
-			$(fateHtml).insertAfter(fateDiv);
+		// Iterate over the buttons and add the "active" class when dice number is less than or equal to the actor's current fate dice
+		fateDiceButtons.forEach(button => {
+			const name = button.name;
+			const match = name.match(/^fateDice-(\d+)$/);
+			if (match) {
+				const number = parseInt(match[1]);
+				if (number <= currentDice) {
+						button.classList.add('active');
+				}
+			}
+		});
+
+
 
 			const wyrdBox = "/modules/ras5e/templates/ras5e-wyrd.hbs"
 			const wyrdHtml = await renderTemplate(wyrdBox, data);
@@ -739,9 +572,50 @@ Hooks.on('renderActorSheet5eCharacter2', async function (app, html, data) {
 			var socialDiv = $(html).find('.top .pills-lg').children().last();
 			$(socialHtml).insertAfter(socialDiv);
 
-			// console.log(data);
-			// console.log(html);
-			// console.log(app);
+			const mainClass = actor._classes[Object.keys(actor._classes)[0]]?.identifier;
+			const subclass = actor._classes[Object.keys(actor._classes)[0]]?.subclass?.identifier;
+			if (mainClass === "seidr" ) {
+				if (subclass === "damned-path") {
+					const damnedFlag = actor.getFlag('ras5e', 'damnedSouls');
+					if (damnedFlag == undefined || damnedFlag.value == null) {
+						const halfIntMinOne = Math.max(actor.system.abilities.int.mod / 2, 1);
+						actor.setFlag('ras5e', 'damnedSouls', {
+							label: "RAS5E.DamnedSouls",
+							value: 0,
+							max: halfIntMinOne
+						});
+					}
+				}
+				else if (subclass === "fenrir") {
+					const furyFlag = actor.getFlag('ras5e', 'fenrirFury');
+					if (furyFlag == undefined || furyFlag.value == null) {
+						const seidrLevel = actor.system.scale.fenrir.fury.value;
+						actor.setFlag('ras5e', 'fenrirFury', {
+							label: "RAS5E.fenrirFury",
+							value: 0,
+							max: seidrLevel
+						});
+					}
+				
+				}
+			}
+			if (mainClass === "furysworn" ) {
+					const damnedFlag = actor.getFlag('ras5e', 'frenzies');
+					if (damnedFlag == undefined || damnedFlag.value == null) {
+						actor.setFlag('ras5e', 'frenzies', {
+							label: "RAS5E.Frenzies",
+							value: actor.system.scale.furysworn.frenzies.value
+						});
+				}
+			}
+			if ( ['damned-path', 'fenrir'].includes(subclass) || ['furysworn'].includes(mainClass) ) {
+					const classBox = "/modules/ras5e/templates/ras5e-class-elements.hbs";
+					const classHtml = await renderTemplate(classBox, data);
+					//var damnedDiv = $(html).find(`[label="Search features"]`);
+					var classDiv = $(html).find(".sidebar .card .stats").children().last();
+					$(classHtml).insertAfter(classDiv);
+			}
+
 			html[0].querySelector(".socialclass-box").addEventListener("click", async ev => {
 				var socialclassDiv = $(html).find('.socialclass-box .pill-lg');
 				if (socialclassDiv.hasClass("empty")) {
@@ -755,13 +629,45 @@ Hooks.on('renderActorSheet5eCharacter2', async function (app, html, data) {
 					item.sheet.render(true);
 				}
 			});
-				// You Event Delegation for buttons within your selector that are clicked.
-				
+
+			$(html).find(".class-adjustment-button").on( "mouseup", async ev => {
 			
+				ev.preventDefault();
+				const action = ev.currentTarget.dataset.action;
+				const input = ev.currentTarget.closest(".label").querySelector("input");
+				if ( action === "decrease" && input.value != 0) input.valueAsNumber -= 1;
+				else if ( action === "increase" && input.value != input.max ) input.valueAsNumber += 1;
+				app.submit();
+			});
+			$(html).find(".fateDice").on( "mouseup", async ev => {
+				const target = ev.currentTarget;
+				const name = target.name;
+				const match = name.match(/^fateDice-(\d+)$/);
+				if (match) {
+				const targetNumber = parseInt(match[1]);
+				const fateDiceButtons = $(html).find('.fateDice').toArray();
+				// Iterate over the buttons and add the "active" class conditionally
+				fateDiceButtons.forEach(button => {
+					const buttonName = button.name;
+					const buttonMatch = buttonName.match(/^fateDice-(\d+)$/);
+					if (match) {
+						const buttonNumber = parseInt(buttonMatch[1]);
+						if (buttonNumber == targetNumber && buttonNumber == currentDice && button.classList.contains('active')) {
+								actor.setFlag('ras5e', 'fatedice', { value: targetNumber - 1 });
+						} else if (buttonNumber == targetNumber && targetNumber < currentDice && button.classList.contains('active')) {
+								actor.setFlag('ras5e', 'fatedice', { value: targetNumber });
+						} else if (buttonNumber == targetNumber && !button.classList.contains('active')) {
+								actor.setFlag('ras5e', 'fatedice', { value: targetNumber });
+						}
+					}
+				});
+				}
+			});
 
 			async function _onFindItem(type) {
 				new dnd5e.applications.CompendiumBrowser({ filters: { locked: { types: new Set(["ras5e.socialclass"]) } } }).render(true);
 			}
+			
 			//app.activateListeners(html);
 
 			};
