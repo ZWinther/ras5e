@@ -2,7 +2,7 @@
   "id": "ras5e",
   "title": "Rune and Steel 5e",
   "description": "Rune and Steel for the DND5E System.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "authors": [
     {
       "name": "Winther",
@@ -56,7 +56,7 @@
     }
   },
   "manifest": "https://github.com/ZWinther/ras5e/releases/latest/download/module.json",
-  "download": "https://github.com/ZWinther/ras5e/releases/download/v1.0.0/module.zip",
+  "download": "https://github.com/ZWinther/ras5e/releases/download/v1.1.0/module.zip",
   "packs": [
     {
       "name": "rands-classes",
