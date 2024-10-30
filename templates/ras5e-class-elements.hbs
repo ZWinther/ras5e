@@ -1,0 +1,108 @@
+{{#with actor}}
+<div class="meter-group">
+    <div class="label roboto-condensed-upper">
+        {{!-- Path of the Damned --}}
+        {{#if_comp _classes.seidr.subclass.identifier "==" "damned-path"}}
+            <span>Captured Souls</span>
+        {{/if_comp}}
+        {{!-- Fenrir --}}
+        {{#if_comp _classes.seidr.subclass.identifier "==" "fenrir"}}
+            <span>Fury</span>
+        {{/if_comp}}
+        {{!-- Furysworn --}}
+        {{#if_comp _classes.furysworn.identifier "==" "furysworn"}}
+            <span>Frenzies</span>
+        {{/if_comp}}
+    </div>
+<div class="ras5e-classBox meter">
+    <div class="label">
+        <div>
+            <span class="value">
+            {{!-- Path of the Damned --}}
+                {{#if_comp _classes.seidr.subclass.identifier "==" "damned-path"}}
+                    {{ flags.ras5e.damnedSouls.value }}
+                {{/if_comp}}
+            {{!-- Fenrir  --}}
+                {{#if_comp _classes.seidr.subclass.identifier "==" "fenrir"}}
+                    {{ flags.ras5e.fenrirFury.value }}
+                {{/if_comp}}
+            {{!-- Furysworn --}}
+                {{#if_comp _classes.furysworn.identifier "==" "furysworn"}}
+                    {{ flags.ras5e.frenzies.value }}
+                {{/if_comp}}
+            </span>
+            <span class="separator">&sol;</span>
+            <span class="max">
+            {{!-- Path of the Damned --}}
+                {{#if_comp _classes.seidr.subclass.identifier "==" "damned-path"}}
+                    {{ flags.ras5e.damnedSouls.max }}
+                {{/if_comp}}
+            {{!-- Fenrir  --}}
+                {{#if_comp _classes.seidr.subclass.identifier "==" "fenrir"}}
+                    {{ flags.ras5e.fenrirFury.max }}
+                {{/if_comp}}
+            {{!-- Furysworn --}}
+                {{#if_comp _classes.furysworn.identifier "==" "furysworn"}}
+                    {{ system.scale.furysworn.frenzies.value }}
+                {{/if_comp}}
+            </span>
+            <input type="number"
+            {{!-- Path of the Damned --}}
+                {{#if_comp _classes.seidr.subclass.identifier "==" "damned-path"}}
+                    name="flags.ras5e.damnedSouls.value"
+                    value="{{ flags.ras5e.damnedSouls.value }}"
+                    min="0"
+                    max="{{ flags.ras5e.damnedSouls.max }}"
+                {{/if_comp}}
+            {{!-- Fenrir  --}}
+                {{#if_comp _classes.seidr.subclass.identifier "==" "fenrir"}}
+                    name="flags.ras5e.fenrirFury.value"
+                    value="{{ flags.ras5e.fenrirFury.value }}"
+                    min="0"
+                    max="{{ flags.ras5e.fenrirFury.max }}"
+                {{/if_comp}}
+            {{!-- Furysworn --}}
+                {{#if_comp _classes.furysworn.identifier "==" "furysworn"}}
+                    name="flags.ras5e.frenzies.value"
+                    value="{{ flags.ras5e.frenzies.value }}"
+                    min="0"
+                    max="{{ system.scale.furysworn.frenzies.value }}"
+                {{/if_comp}}
+            hidden>
+        </div>
+        <div>
+            <a class="class-adjustment-button" data-action="decrease" data-property=
+            {{!-- Path of the Damned --}}
+                {{#if_comp _classes.seidr.subclass.identifier "==" "damned-path"}}
+                    "flags.ras5e.damnedSouls.value">
+                {{/if_comp}}
+            {{!-- Fenrir --}}
+                {{#if_comp _classes.seidr.subclass.identifier "==" "fenrir"}}
+                    "flags.ras5e.fenrirFury.value">
+                {{/if_comp}}
+            {{!-- Furysworn --}}
+                {{#if_comp _classes.furysworn.identifier "==" "furysworn"}}
+                    "flags.ras5e.frenzies.value">
+                {{/if_comp}}
+                <i class="fas fa-minus"></i>
+            </a>
+            <a class="class-adjustment-button" data-action="increase" data-property=
+                {{!-- Path of the Damned --}}
+                {{#if_comp _classes.seidr.subclass.identifier "==" "damned-path"}}
+                    "flags.ras5e.damnedSouls.value">
+                {{/if_comp}}
+                {{!-- Fenrir --}}
+                {{#if_comp _classes.seidr.subclass.identifier "==" "fenrir"}}
+                    "flags.ras5e.fenrirFury.value">
+                {{/if_comp}}
+                {{!-- Furysworn --}}
+                {{#if_comp _classes.furysworn.identifier "==" "furysworn"}}
+                    "flags.ras5e.frenzies.value">
+                {{/if_comp}}
+                <i class="fas fa-plus"></i>
+            </a>
+        </div>
+    </div>
+</div>
+</div>
+{{/with}}
