@@ -74,9 +74,6 @@ class SocialclassData extends dnd5e.dataModels.ItemDataModel.mixin(dnd5e.dataMod
 		if ( (game.user.id !== userId) || this.parent.actor?.type !== "character" ) return;
 		this.parent.actor.update({ "flags.ras5e.socialclass.id": this.parent.id, "flags.ras5e.socialclass.name": this.parent.name, "flags.ras5e.socialclass.img": this.parent.img });
 		}
-		// "flags.ras5e.socialclass.id": this.parent.id,
-		// "flags.ras5e.socialclass.name": this.parent.name,
-		// "flags.ras5e.socialclass.img": this.parent.img
 		async _preDelete(options, user) {
 		if ( this.parent.actor?.type !== "character" ) return;
 		await this.parent.actor.update({"flags.ras5e.socialclass": null});
@@ -97,23 +94,6 @@ class SocialclassData extends dnd5e.dataModels.ItemDataModel.mixin(dnd5e.dataMod
 	}
 
 Hooks.on('init', async function () {
-
-	
-	
-
-	// 	const wyrdFlag = this.getFlag('ras5e', 'wyrd');
-	// 	if (wyrdFlag == undefined) {
-	// 		this.setFlag('ras5e', 'wyrd', {
-	// 			label: "RAS5E.Wyrd",
-	// 			value: 0,
-	// 			max: 20,
-	// 			pct: 0.00
-	// 		});
-	// 	};
-
-
-	
-
 	Object.assign(CONFIG.Item.typeLabels, { socialclass: "TYPES.Item.socialclass" });
 	Object.assign(CONFIG.Item.typeLabels, { socialclass: "TYPES.Item.path" });
 	Object.assign(CONFIG.DND5E.featureTypes.race, {	subtypes: { birthfeat: "RAS5E.BirthTrait" }	});
@@ -611,7 +591,6 @@ Hooks.on('renderActorSheet5eCharacter2', async function (app, html, data) {
 			if ( ['damned-path', 'fenrir'].includes(subclass) || ['furysworn'].includes(mainClass) ) {
 					const classBox = "/modules/ras5e/templates/ras5e-class-elements.hbs";
 					const classHtml = await renderTemplate(classBox, data);
-					//var damnedDiv = $(html).find(`[label="Search features"]`);
 					var classDiv = $(html).find(".sidebar .card .stats").children().last();
 					$(classHtml).insertAfter(classDiv);
 			}
@@ -667,19 +646,6 @@ Hooks.on('renderActorSheet5eCharacter2', async function (app, html, data) {
 			async function _onFindItem(type) {
 				new dnd5e.applications.CompendiumBrowser({ filters: { locked: { types: new Set(["ras5e.socialclass"]) } } }).render(true);
 			}
-			
-			//app.activateListeners(html);
 
 			};
-			
-	// if (sheet5e.includes("dnd5e", "character")) {
-
-	// 	// const SumBox = "/modules/ras5e/templates/lotr-summary.hbs"
-    //     // const SumHtml = await renderTemplate(SumBox, actor);
-    //     // var summary = $(html).find('.summary')[0];
-    //     // // summary = SumHtml;
-	// 	// $(SumHtml).insertAfter(summary);
-
-    //     $(html).find(".dnd5e.sheet.actor.character").css("min-height", "823px");
-    // }
-    });
+});
